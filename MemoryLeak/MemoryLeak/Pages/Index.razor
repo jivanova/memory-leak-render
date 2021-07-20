@@ -1,0 +1,72 @@
+﻿@page "/"
+
+@using MemoryLeak.Data
+@using System.Threading
+@using System.Collections.ObjectModel
+@using System.Collections.Specialized
+
+<TableComponent Items="@DataSource">
+</TableComponent>
+
+@code {
+    private List<WeatherForecast> Items;
+    private Timer _timer;
+    private Random _rnd = new Random();
+    public ManualObservableCollection<WeatherForecast> DataSource { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Items = new List<WeatherForecast>();
+
+        foreach (var iteration in Enumerable.Range(1, 100))
+        {
+            Items.Add(new WeatherForecast()
+            {
+                Date = DateTime.Now.AddMinutes(-iteration),
+                TemperatureC = iteration,
+                Summary = "group" + (1 + (iteration / 6))
+            });
+        }
+
+        _timer = new Timer(Update, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+
+        DataSource = new ManualObservableCollection<WeatherForecast>(Items);
+
+        base.OnInitialized();
+    }
+
+    private void Update(object? state)
+    {
+        for (var i = 0; i < Items.Count; i++)
+        {
+            var item = Items[i];
+            item.TemperatureC = _rnd.Next(100);
+        }
+
+        DataSource.NotifyChanged();
+    }
+
+
+    public class ManualObservableCollection<T> : ObservableCollection<T>
+    {
+        public static readonly NotifyCollectionChangedEventArgs ResetCollectionChanged = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
+
+
+        public ManualObservableCollection()
+        {
+        }
+
+        public ManualObservableCollection(IEnumerable<T> collection) : base(collection)
+        {
+        }
+
+        public ManualObservableCollection(List<T> list) : base(list)
+        {
+        }
+
+        public void NotifyChanged()
+        {
+            OnCollectionChanged(ResetCollectionChanged);
+        }
+    }
+}

@@ -1,0 +1,10 @@
+﻿@namespace MemoryLeak.Shared
+
+<td>
+    @ChildContent
+</td>
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+}

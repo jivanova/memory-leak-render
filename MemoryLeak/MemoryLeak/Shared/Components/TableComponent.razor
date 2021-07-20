@@ -1,0 +1,42 @@
+﻿@namespace MemoryLeak.Shared
+
+@using MemoryLeak.Data
+@using System.Collections.ObjectModel
+@using System.Collections.Specialized
+
+@implements IDisposable
+
+<table>
+    @foreach (var item in Items)
+    {
+        <tr>
+            <TableCell>@item.Date</TableCell>
+            <TableCell>@item.TemperatureC</TableCell>
+            <TableCell>@item.TemperatureF</TableCell>
+            <TableCell>@item.Summary</TableCell>
+        </tr>
+    }
+</table>
+
+@code {
+    [Parameter]
+    public ObservableCollection<WeatherForecast> Items { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Items.CollectionChanged += NotifyCollectionChanged;
+
+        base.OnInitialized();
+    }
+
+    public void Dispose()
+    {
+        Items.CollectionChanged -= NotifyCollectionChanged;
+    }
+
+    private void NotifyCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
+    {
+        // update ui on change
+        InvokeAsync(StateHasChanged);
+    }
+}
